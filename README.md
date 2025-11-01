@@ -1,12 +1,30 @@
 # Auto PDF Watermark Remover
 [中文](readme-zh.md)｜[English](README.md)
 
+## Example
+
+Below is a comparison of a sample page before and after watermark removal.  
+Left: original image (`input-samples`), right: processed image (`output-samples`).
+
+| Original | Cleaned |
+|:--------:|:-------:|
+| <img src="input-samples/sample(rotatetext)_page_1.png" width="320"/> | <img src="output-samples/sample(rotatetext)_page_1.png" width="320"/> |
+| <img src="input-samples/sample(Leftlogo)_page_1.png" width="320"/> | <img src="output-samples/sample(Leftlogo)_page_1.png" width="320"/> |
+| <img src="input-samples/sample(Draft)_page_1.png" width="320"/> | <img src="output-samples/sample(Draft)_page_1.png" width="320"/> |
+| <img src="input-samples/sample(Secrect)_page_1.png" width="320"/> | <img src="output-samples/sample(Secrect)_page_1.png" width="320"/> |
+
+<!-- You can add more samples as needed:
+| <img src="input-samples/sample2.png" width="320"/> | <img src="output-samples/sample2.png" width="320"/> |
+-->
+
 A small, local Python toolkit that attempts to remove or reduce visible colored watermarks from PDF files by rendering pages to images, processing the images to remove watermark regions, and rebuilding the PDF. It provides two scripts:
 
 - `watermarkrm-rgb.py` — user-specified watermark color (RGB) processing.
 - `watermarkrm-auto.py` — attempts to auto-detect a likely watermark color and process pages automatically.
 
 Both scripts operate in a three-step pipeline: extract PDF pages to images, remove watermark pixels on each image, then rebuild a new PDF from the cleaned images.
+
+**Important:** This toolkit targets colored watermarks only. Black-and-white (grayscale) or pure black text-like watermarks are not supported and typically require other techniques (e.g., content-level/vector removal, binarization/threshold cleanup).
 
 ## Features
 
@@ -90,6 +108,7 @@ The final cleaned PDFs are written to `./output/` with the original filenames.
 
 ## Limitations
 
+- Does not support black-and-white/grayscale watermarks; use other approaches (e.g., content-level editing, binarization/threshold tools).
 - This tool is best for simple colored or semi-transparent watermarks. It may not work well for:
   - Vector watermarks embedded in the PDF content stream
   - Watermarks blended with background textures or gradients
@@ -105,7 +124,9 @@ Use this tool as a convenience for quick local cleanups. Always keep backups of 
 
 ## License & credits
 
-This repository is provided as-is. Feel free to adapt and improve it. If you publish changes, please include attribution to the original author.
+- License: MIT. See the LICENSE file for full terms.
+- You may use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies under the MIT license; retain copyright and license notices.
+- Credits: Thanks to the authors and maintainers of PyMuPDF (fitz), OpenCV, NumPy, and Pillow.
 
 ## Contact
 

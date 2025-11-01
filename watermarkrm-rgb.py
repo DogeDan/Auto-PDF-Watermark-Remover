@@ -179,6 +179,21 @@ def remove_watermark_from_image(image_input, watermark_color_rgb, output_path=No
     pixels = original_img[refined_mask > 0]
     color_diffs = np.max(pixels, axis=1) - np.min(pixels, axis=1)
     keep_mask = color_diffs >= 40
+
+    # If any two channels of the RGB values are less than 80,
+    # they are also considered pixels to be retained.
+    for i in range(pixels.shape[0]):
+        r, g, b = pixels[i]
+        low_channel_count = sum([1 for val in [r, g, b] if val < 80])
+        if low_channel_count >= 2:
+            keep_mask[i] = False
+    y_coords, x_coords = np.where(refined_mask > 0)
+    # Replace selected pixels with white (targeting gray watermark regions)
+    for i, should_modify in enumerate(keep_mask):
+        if should_modify:
+            y, x = y_coords[i], x_coords[i]
+            result[y, x] = [255, 255, 255]
+
     y_coords, x_coords = np.where(refined_mask > 0)
     # Replace selected pixels with white (targeting gray watermark regions)
     for i, should_modify in enumerate(keep_mask):

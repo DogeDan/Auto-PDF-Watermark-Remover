@@ -68,11 +68,11 @@ def extract_pdf_to_images(pdf_path, output_folder, dpi=300, debug=False):
             except Exception as render_error:
                 if debug:
                     print(f"\nWarning: error rendering page {page_num + 1}, attempting fallback: {render_error}")
-                # 降级方案：使用更低的DPI或不同的渲染选项
+                # Fallback: try lower DPI or different rendering options
                 try:
                     pix = page.get_pixmap(matrix=mat, alpha=False, annots=False)
                 except Exception:
-                    # 最后的尝试：使用默认设置
+                    # Final attempt: use default settings
                     pix = page.get_pixmap(alpha=False)
 
             # Convert pixmap bytes to a numpy image array
@@ -85,13 +85,13 @@ def extract_pdf_to_images(pdf_path, output_folder, dpi=300, debug=False):
                 img_array = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
 
             if debug:
-                # 保存为PNG
+                # Save as PNG
                 output_file = output_path / f"page_{page_num + 1:03d}.png"
                 cv2.imwrite(str(output_file), img_array)
                 image_data.append(output_file)
                 print(f"✓ Saved ({img_array.shape[1]}x{img_array.shape[0]}px)")
             else:
-                # 直接存储图像数组
+                # Store image array directly
                 image_data.append(img_array)
 
         except Exception as e:
@@ -225,7 +225,15 @@ def remove_watermark_from_image(image_input, output_path=None):
     # Within refined_mask, detect pixels with sufficient channel variation
     pixels = original_img[refined_mask > 0]
     color_diffs = np.max(pixels, axis=1) - np.min(pixels, axis=1)
-    keep_mask = color_diffs >= 50
+    keep_mask = color_diffs >= 40
+    
+    # If any two channels of the RGB values are less than 80,
+    # they are also considered pixels to be retained.
+    for i in range(pixels.shape[0]):
+        r, g, b = pixels[i]
+        low_channel_count = sum([1 for val in [r, g, b] if val < 80])
+        if low_channel_count >= 2:
+            keep_mask[i] = False
     y_coords, x_coords = np.where(refined_mask > 0)
     # Replace selected pixels with white (targeting gray watermark regions)
     for i, should_modify in enumerate(keep_mask):
@@ -264,7 +272,7 @@ def process_images_in_folder(input_data, output_folder, debug=False):
         print(f"Input folder: {input_path.absolute()}")
         print(f"Output folder: {output_path.absolute()}")
 
-        # 获取所有PNG文件
+        # Get all PNG files
         image_files = sorted(input_path.glob("page_*.png"))
         total_images = len(image_files)
 
@@ -309,7 +317,7 @@ def rebuild_pdf_from_images(image_data, output_pdf_path, debug=False):
         print(f"Input folder: {image_path.absolute()}")
         print(f"Output PDF: {output_pdf_path}\n")
 
-        # 获取所有PNG文件，按顺序排序
+        # Get all PNG files in order
         image_files = sorted(image_path.glob("page_*.png"))
 
         if not image_files:
@@ -328,7 +336,7 @@ def rebuild_pdf_from_images(image_data, output_pdf_path, debug=False):
 
         print(f"✓\nSaving PDF...", end=" ")
     else:
-        # 非debug模式：直接从numpy数组转换
+        # Non-debug mode: convert directly from numpy arrays
         pil_images = []
         for img_array in image_data:
             # OpenCV uses BGR, PIL uses RGB
@@ -336,7 +344,7 @@ def rebuild_pdf_from_images(image_data, output_pdf_path, debug=False):
             pil_img = Image.fromarray(img_rgb)
             pil_images.append(pil_img)
 
-    # 保存为PDF
+    # Save as PDF
     pil_images[0].save(
         output_pdf_path,
         save_all=True,
@@ -358,10 +366,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Usage examples:
-  python watermarkrm.py -r 249 -g 249 -b 249
-  python watermarkrm.py -r 249 -g 249 -b 249 --debug
-
-  Where RGB(249, 249, 249) is the detected watermark color.
+  python watermarkrm.py
+  python watermarkrm.py --debug
   Use --debug to enable verbose output and save intermediate files.
 
 All PDF files in the current directory will be processed and output to ./output/
@@ -380,12 +386,12 @@ All PDF files in the current directory will be processed and output to ./output/
         print("   PDF Watermark Removal Tool (batch mode)")
         print("=" * 50)
 
-    # 验证颜色
+    # Validate color values (unused in auto mode)
     # if not all(0 <= val <= 255 for val in [args.red, args.green, args.blue]):
-    #     print("错误：颜色值必须在 0-255 之间")
+    #     print("Error: Color values must be between 0 and 255")
     #     sys.exit(1)
 
-    # 查找当前目录下所有PDF文件
+    # Find all PDF files in the current directory
     current_dir = Path(".")
     pdf_files = sorted(current_dir.glob("*.pdf"))
 
@@ -393,11 +399,11 @@ All PDF files in the current directory will be processed and output to ./output/
         print("Error: No PDF files found in the current directory")
         sys.exit(1)
 
-    # 创建output文件夹
+    # Create output folder
     output_dir = current_dir / "output"
     output_dir.mkdir(exist_ok=True)
 
-    # 定义中间文件夹（仅debug模式使用）
+    # Define intermediate folders (debug mode only)
     # Define intermediate folders (used in debug mode)
     images_extracted_folder = "images_extracted"
     images_cleaned_folder = "images_cleaned"

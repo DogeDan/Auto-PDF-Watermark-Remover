@@ -1,12 +1,29 @@
 # 自动 PDF 水印去除工具
 [中文](readme-zh.md)｜[English](README.md)
 
+## 案例
+
+下方展示了去水印前后页面的对比。  
+左侧为原始图片（`input-samples`），右侧为处理后图片（`output-samples`）。
+
+| 原图 | 去水印后 |
+|:--------:|:-------:|
+| <img src="input-samples/sample(rotatetext)_page_1.png" width="320"/> | <img src="output-samples/sample(rotatetext)_page_1.png" width="320"/> |
+| <img src="input-samples/sample(Leftlogo)_page_1.png" width="320"/> | <img src="output-samples/sample(Leftlogo)_page_1.png" width="320"/> |
+| <img src="input-samples/sample(Draft)_page_1.png" width="320"/> | <img src="output-samples/sample(Draft)_page_1.png" width="320"/> |
+| <img src="input-samples/sample(Secrect)_page_1.png" width="320"/> | <img src="output-samples/sample(Secrect)_page_1.png" width="320"/> |
+<!-- 可添加更多样例：
+| <img src="input-samples/sample2.png" width="320"/> | <img src="output-samples/sample2.png" width="320"/> |
+-->
+
 一个本地 Python 小工具，尝试通过将 PDF 页面渲染为图像、对图像进行水印像素处理，然后重建 PDF 来去除或减弱可见的彩色水印。仓库包含两个脚本：
 
 - `watermarkrm-rgb.py` — 用户指定水印颜色（RGB）模式。
 - `watermarkrm-auto.py` — 自动检测可能的水印颜色并处理页面。
 
 两个脚本采用三步流水线：将 PDF 页面导出为图像 -> 在图像中去除水印像素 -> 从清理后的图像重建 PDF。
+
+**重要说明：** 本工具仅针对“彩色”水印。黑白/灰度或纯黑文字类水印通常需要采用其他技术（如内容级/矢量对象移除、二值化/阈值化清理等），本脚本不支持。
 
 ## 特性
 
@@ -90,6 +107,7 @@ python watermarkrm-auto.py --debug
 
 ## 限制
 
+- 不适用于黑白/灰度水印；请使用其他方法（如内容级编辑、二值化/阈值工具等）。
 - 该工具对简单的彩色或半透明水印效果最好，不适用于：
   - 嵌入为矢量对象的水印
   - 与背景纹理或渐变混合的水印
@@ -105,7 +123,9 @@ python watermarkrm-auto.py --debug
 
 ## 许可与致谢
 
-该仓库按“原样”提供，欢迎自由修改与改进。若发布修改内容，请保留对原作者的致谢。
+- 许可协议：MIT（详见仓库中的 LICENSE 文件）。
+- 你可以在 MIT 条款下使用、复制、修改、合并、发布、分发、再许可及/或销售本软件的副本；在源码分发时请保留版权与许可声明。
+- 致谢：感谢 PyMuPDF（fitz）、OpenCV、NumPy、Pillow 的作者与维护者。
 
 ## 联系
 
